@@ -84,7 +84,8 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
             self.set_param_object(copy.deepcopy(param))
 
         self.model = None
-        self.model_weight_url = 'https://drive.google.com/file/d/1mcr7ALciuAsHCpLnrtG_eop5-EYhbCmz/view?usp=drive_link'
+        self.device = torch.device("cpu")
+        self.model_weight_url = 'https://drive.google.com/uc?id=1mcr7ALciuAsHCpLnrtG_eop5-EYhbCmz'
         self.model_name = 'modnet_photographic_portrait_matting.ckpt'
 
     def get_progress_steps(self):
@@ -117,9 +118,6 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
 
         # Get image from input/output (numpy array):
         input_image = input.get_image()
-
-        # # define hyper-parameters
-        # param.input_size = 512
 
         # define image to tensor transform
         im_transform = transforms.Compose(
