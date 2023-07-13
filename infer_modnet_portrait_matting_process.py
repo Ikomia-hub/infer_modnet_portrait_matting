@@ -45,7 +45,6 @@ class InferModnetPortraitMattingParam(core.CWorkflowTaskParam):
         core.CWorkflowTaskParam.__init__(self)
 
         # Place default value initialization here
-        self.model_name = "resnet34"
         self.cuda = torch.cuda.is_available()
         self.input_size = 1024
         self.update = False
@@ -103,6 +102,7 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
         matte = np.repeat(np.asarray(matte)[:, :, None], 3, axis=2) / 255
         foreground = image * matte + np.full(image.shape, 255) * (1 - matte)
         foreground = cv2.resize(foreground, (image.shape[1], image.shape[0]))
+        foreground = foreground.astype('uint8')
         return foreground
 
     def run(self):
