@@ -21,7 +21,6 @@ import torch
 from ikomia import core, dataprocess, utils
 import os
 import sys
-import argparse
 import numpy as np
 from PIL import Image
 import cv2
@@ -132,7 +131,6 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
 
         # Load model
         if param.update or self.model is None:
-            print("loading pre-trained MODNet model ...")
             # Set path
             model_folder = os.path.join(os.path.dirname(
                 os.path.realpath(__file__)), "weights")
@@ -147,7 +145,6 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
             # create MODNet and load the pre-trained ckpt
             self.model = MODNet(backbone_pretrained=False)
             self.model = nn.DataParallel(self.model)
-
             if param.cuda:
                 self.model = self.model.cuda()
                 weights = torch.load(model_weights)
@@ -191,8 +188,8 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
         im = F.interpolate(im, size=(im_rh, im_rw), mode='area')
 
         # inference
-        _, _, matte = modnet(
-            im.cuda() if torch.cuda.is_available() else im, True)
+        _, _, matte = self.model(
+            im.cuda() if param.cuda else im, True)
 
         # resize and save matte
         matte = F.interpolate(matte, size=(im_h, im_w), mode='area')
