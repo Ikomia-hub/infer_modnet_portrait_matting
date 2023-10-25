@@ -143,7 +143,7 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
             # create MODNet and load the pre-trained ckpt
             self.model = MODNet(backbone_pretrained=False)
             self.model = nn.DataParallel(self.model)
-            if param.cuda:
+            if torch.cuda.is_available() and param.cuda:
                 self.model = self.model.cuda()
                 weights = torch.load(model_weights)
             else:
@@ -187,7 +187,7 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
 
         # inference
         _, _, matte = self.model(
-            im.cuda() if param.cuda else im, True)
+            im.cuda() if torch.cuda.is_available() and param.cuda else im, True)
 
         # resize and save matte
         matte = F.interpolate(matte, size=(im_h, im_w), mode='area')
@@ -222,7 +222,6 @@ class InferModnetPortraitMattingFactory(dataprocess.CTaskFactory):
         # Set process information as string here
         self.info.name = "infer_modnet_portrait_matting"
         self.info.short_description = "Inference of MODNet Portrait Matting."
-        self.info.description = "This algorithm proposes inference MODNet a Trimap-Free Portrait Matting."
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Background"
         self.info.version = "1.0.0"
@@ -238,6 +237,9 @@ class InferModnetPortraitMattingFactory(dataprocess.CTaskFactory):
         self.info.repository = "https://github.com/ZHKKKe/MODNet"
         # Keywords used for search
         self.info.keywords = "Portrait matting, Semantic segmentation, Trimap"
+        self.info.algo_type = core.AlgoType.INFER
+        self.info.algo_tasks = "IMAGE_MATTING"
+
 
     def create(self, param=None):
         # Create process object
