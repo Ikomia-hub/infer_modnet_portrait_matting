@@ -94,17 +94,28 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
         return 1
 
     def combined_display(self, image, matte):
+        # Convert single channel to 3 channel image
         if len(image.shape) == 2:
             image = image[:, :, None]
         if image.shape[2] == 1:
             image = np.repeat(image, 3, axis=2)
         elif image.shape[2] == 4:
             image = image[:, :, 0:3]
-        matte = np.repeat(np.asarray(matte)[:, :, None], 3, axis=2) / 255
-        foreground = image * matte + np.full(image.shape, 255) * (1 - matte)
-        foreground = cv2.resize(foreground, (image.shape[1], image.shape[0]))
-        foreground = foreground.astype('uint8')
-        return foreground
+
+        # Normalize matte to range [0, 1]
+        matte_normalized = np.asarray(matte)[:, :, None] / 255
+
+        # Calculate the foreground
+        foreground_rgb = image * matte_normalized + np.full(image.shape, 255) * (1 - matte_normalized)
+        foreground_rgb = cv2.resize(foreground_rgb, (image.shape[1], image.shape[0]))
+        
+        # Convert matte to uint8 for alpha channel
+        alpha_channel = (matte_normalized * 255).astype('uint8')
+        
+        # Concatenate RGB and alpha channel to get the final RGBA image
+        image_rbga = cv2.merge((image, alpha_channel))
+
+        return image_rbga
 
     def run(self):
         # Core function of your process
