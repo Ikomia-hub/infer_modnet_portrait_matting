@@ -46,7 +46,7 @@ class InferModnetPortraitMattingParam(core.CWorkflowTaskParam):
 
         # Place default value initialization here
         self.cuda = torch.cuda.is_available()
-        self.input_size = 1024
+        self.input_size = 800
         self.update = False
 
     def set_values(self, param_map):
@@ -170,19 +170,26 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
 
         # resize image for input
         im_b, im_c, im_h, im_w = im.shape
-        if max(im_h, im_w) < param.input_size or min(im_h, im_w) > param.input_size:
+
+        # Check if the image dimensions need resizing
+        if max(im_h, im_w) > param.input_size or min(im_h, im_w) > param.input_size:
             if im_w >= im_h:
-                im_rh = param.input_size
-                im_rw = int(im_w / im_h * param.input_size)
-            elif im_w < im_h:
-                im_rw = param.input_size
-                im_rh = int(im_h / im_w * param.input_size)
+                # Calculate new height and make sure it's less than param.input_size
+                im_rh = min(param.input_size, int(im_h * param.input_size / im_w))
+                im_rw = int(im_w / im_h * im_rh)
+            else:
+                # Calculate new width and make sure it's less than param.input_size
+                im_rw = min(param.input_size, int(im_w * param.input_size / im_h))
+                im_rh = int(im_h / im_w * im_rw)
         else:
             im_rh = im_h
             im_rw = im_w
 
+        # Ensure the dimensions are divisible by 32
         im_rw = im_rw - im_rw % 32
         im_rh = im_rh - im_rh % 32
+
+        # Interpolate the image to the new size
         im = F.interpolate(im, size=(im_rh, im_rw), mode='area')
 
         # inference
