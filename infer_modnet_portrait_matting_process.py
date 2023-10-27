@@ -236,7 +236,7 @@ class InferModnetPortraitMattingFactory(dataprocess.CTaskFactory):
         # Code source repository
         self.info.repository = "https://github.com/ZHKKKe/MODNet"
         # Keywords used for search
-        self.info.keywords = "Portrait matting, Semantic segmentation, Trimap"
+        self.info.keywords = "Portrait matting, Semantic segmentation, Trimap, PyTorch"
         self.info.algo_type = core.AlgoType.INFER
         self.info.algo_tasks = "IMAGE_MATTING"
 
