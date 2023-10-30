@@ -85,6 +85,7 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
 
         self.model = None
         self.device = torch.device("cpu")
+        self.use_cuda = False
         self.model_weight_url = 'https://drive.google.com/uc?id=1mcr7ALciuAsHCpLnrtG_eop5-EYhbCmz'
         self.model_name = 'modnet_photographic_portrait_matting.ckpt'
 
@@ -140,6 +141,8 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
 
         # Load model
         if param.update or self.model is None:
+            self.use_cuda = torch.cuda.is_available() and param.cuda
+            self.device = torch.device("cuda" if self.use_cuda else "cpu")
             # Set path
             model_folder = os.path.join(os.path.dirname(
                 os.path.realpath(__file__)), "weights")
@@ -153,14 +156,20 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
 
             # create MODNet and load the pre-trained ckpt
             self.model = MODNet(backbone_pretrained=False)
-            self.model = nn.DataParallel(self.model)
-            if torch.cuda.is_available() and param.cuda:
-                self.model = self.model.cuda()
-                weights = torch.load(model_weights)
+
+
+            if not self.use_cuda:
+                weights = torch.load(model_weights, map_location=self.device)
+                # Adjust the state dict if the model to run on cpu
+                if not isinstance(self.model, nn.DataParallel) and list(weights.keys())[0].startswith('module.'):
+                    weights = {k[len("module."):]: v for k, v in weights.items()} 
+
             else:
-                weights = torch.load(
-                    model_weights, map_location=torch.device('cpu'))
+                self.model = nn.DataParallel(self.model)
+                weights = torch.load(model_weights, map_location=self.device)
+            
             self.model.load_state_dict(weights)
+            self.model = self.model.to(device=self.device)
             self.model.eval()
             param.update = False
 
@@ -204,8 +213,7 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
         im = F.interpolate(im, size=(im_rh, im_rw), mode='area')
 
         # inference
-        _, _, matte = self.model(
-            im.cuda() if torch.cuda.is_available() and param.cuda else im, True)
+        _, _, matte = self.model(im.cuda() if self.use_cuda else im, True)
 
         # resize and save matte
         matte = F.interpolate(matte, size=(im_h, im_w), mode='area')
