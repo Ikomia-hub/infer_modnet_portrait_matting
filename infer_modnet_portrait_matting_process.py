@@ -109,10 +109,10 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
         # Calculate the foreground
         foreground_rgb = image * matte_normalized + np.full(image.shape, 255) * (1 - matte_normalized)
         foreground_rgb = cv2.resize(foreground_rgb, (image.shape[1], image.shape[0]))
-        
+
         # Convert matte to uint8 for alpha channel
         alpha_channel = (matte_normalized * 255).astype('uint8')
-        
+
         # Concatenate RGB and alpha channel to get the final RGBA image
         image_rbga = cv2.merge((image, alpha_channel))
 
@@ -157,17 +157,15 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
             # create MODNet and load the pre-trained ckpt
             self.model = MODNet(backbone_pretrained=False)
 
-
             if not self.use_cuda:
                 weights = torch.load(model_weights, map_location=self.device)
                 # Adjust the state dict if the model to run on cpu
                 if not isinstance(self.model, nn.DataParallel) and list(weights.keys())[0].startswith('module.'):
-                    weights = {k[len("module."):]: v for k, v in weights.items()} 
-
+                    weights = {k[len("module."):]: v for k, v in weights.items()}
             else:
                 self.model = nn.DataParallel(self.model)
                 weights = torch.load(model_weights, map_location=self.device)
-            
+
             self.model.load_state_dict(weights)
             self.model = self.model.to(device=self.device)
             self.model.eval()
