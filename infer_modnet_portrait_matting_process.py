@@ -258,7 +258,8 @@ class InferModnetPortraitMattingFactory(dataprocess.CTaskFactory):
         # URL of documentation
         self.info.documentation_link = "https://arxiv.org/pdf/2011.11961.pdf"
         # Code source repository
-        self.info.repository = "https://github.com/ZHKKKe/MODNet"
+        self.info.repository = "https://github.com/Ikomia-hub/infer_modnet_portrait_matting"
+        self.info.original_repository = "https://github.com/ZHKKKe/MODNet"
         # Keywords used for search
         self.info.keywords = "Portrait matting, Semantic segmentation, Trimap, PyTorch"
         self.info.algo_type = core.AlgoType.INFER
