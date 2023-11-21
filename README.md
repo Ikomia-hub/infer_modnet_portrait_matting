@@ -51,6 +51,7 @@ wf.run_on(url="https://images.pexels.com/photos/12508998/pexels-photo-12508998.j
 # Inspect your results
 display(algo.get_input(0).get_image())
 display(algo.get_output(0).get_image())
+display(algo.get_output(1).get_image())
 ```
 
 ## :sunny: Use with Ikomia Studio
@@ -62,7 +63,7 @@ Ikomia Studio offers a friendly UI with the same features as the API.
 - For additional guidance on getting started with Ikomia Studio, check out [this blog post](https://www.ikomia.ai/blog/how-to-get-started-with-ikomia-studio).
 
 ## :pencil: Set algorithm parameters
-- **input_size** (int) - default: '1024': Size of the input image (stride of 32)
+- **input_size** (int) - default: '800': Size of the input image (stride of 32)
 - **cuda** (bool): If True, CUDA-based inference (GPU). If False, run on CPU.
 
 ```python
@@ -77,7 +78,7 @@ algo = wf.add_task(name="infer_modnet_portrait_matting", auto_connect=True)
 
 # Set process parameters
 algo.set_parameters({
-    "input_size" : "1024",
+    "input_size" : "800",
     "cuda" : "True"})
 
 # Run workflow on the image
@@ -86,6 +87,7 @@ wf.run_on(url="https://images.pexels.com/photos/12508998/pexels-photo-12508998.j
 # Inspect your results
 display(algo.get_input(0).get_image())
 display(algo.get_output(0).get_image())
+display(algo.get_output(1).get_image())
 ```
 
 ## :mag: Explore algorithm outputs
