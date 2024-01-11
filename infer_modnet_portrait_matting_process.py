@@ -29,7 +29,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-import gdown
+import requests
 
 from infer_modnet_portrait_matting.MODNet.MODNet.src.models.modnet import MODNet
 
@@ -150,9 +150,13 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
 
             # Download model if not exist
             if not os.path.isfile(model_weights):
-                os.makedirs(model_folder, exist_ok=True)
-                gdown.download(self.model_weight_url,
-                               model_weights, quiet=False)
+                model_url = utils.get_model_hub_url() + "/" + self.name + "/" + self.model_name
+                print("Downloading weights...")
+                response = requests.get(model_url, stream=True)
+                with open(model_weights, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                print("Weights downloaded")
 
             # create MODNet and load the pre-trained ckpt
             self.model = MODNet(backbone_pretrained=False)
@@ -248,7 +252,7 @@ class InferModnetPortraitMattingFactory(dataprocess.CTaskFactory):
         self.info.short_description = "Inference of MODNet Portrait Matting."
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Background"
-        self.info.version = "1.0.0"
+        self.info.version = "1.1.0"
         self.info.icon_path = "icons/icon.png"
         self.info.authors = "Zhanghan Ke and Jiayu Sun and Kaican Li and Qiong Yan and Rynson W.H. Lau"
         self.info.article = "MODNet: Real-Time Trimap-Free Portrait Matting via Objective Decomposition"
