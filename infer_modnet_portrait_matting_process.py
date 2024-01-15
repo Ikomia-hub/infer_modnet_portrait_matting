@@ -149,14 +149,10 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
             model_weights = os.path.join(str(model_folder), self.model_name)
 
             # Download model if not exist
+            model_url = utils.get_model_hub_url() + "/" + self.name + "/" + self.model_name
             if not os.path.isfile(model_weights):
-                model_url = utils.get_model_hub_url() + "/" + self.name + "/" + self.model_name
-                print("Downloading weights...")
-                response = requests.get(model_url, stream=True)
-                with open(model_weights, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
-                print("Weights downloaded")
+                os.makedirs(model_folder, exist_ok=True)
+                self.download(model_url, model_weights)
 
             # create MODNet and load the pre-trained ckpt
             self.model = MODNet(backbone_pretrained=False)
