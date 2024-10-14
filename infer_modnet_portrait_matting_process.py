@@ -76,6 +76,7 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
         dataprocess.C2dImageTask.__init__(self, name)
         # Add input/output of the process here
         self.add_output(dataprocess.CImageIO())
+        self.add_output(dataprocess.CImageIO())
 
         # Create parameters class
         if param is None:
@@ -222,10 +223,11 @@ class InferModnetPortraitMatting(dataprocess.C2dImageTask):
         portrait = self.combined_display(input_image, bin_img)
 
         # Set output:
-        output_bin = self.get_output(0)
+        self.forward_input_image(0, 0)
+        output_bin = self.get_output(1)
         output_bin.set_image(bin_img)
 
-        output = self.get_output(1)
+        output = self.get_output(2)
         output.set_image(portrait)
 
         # Step progress bar (Ikomia Studio):
@@ -248,7 +250,7 @@ class InferModnetPortraitMattingFactory(dataprocess.CTaskFactory):
         self.info.short_description = "Inference of MODNet Portrait Matting."
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Background"
-        self.info.version = "1.1.1"
+        self.info.version = "1.2.0"
         self.info.icon_path = "icons/icon.png"
         self.info.authors = "Zhanghan Ke and Jiayu Sun and Kaican Li and Qiong Yan and Rynson W.H. Lau"
         self.info.article = "MODNet: Real-Time Trimap-Free Portrait Matting via Objective Decomposition"
